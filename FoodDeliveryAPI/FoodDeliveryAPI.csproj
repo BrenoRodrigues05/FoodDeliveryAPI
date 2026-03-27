@@ -8,12 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Application\" />
     <Folder Include="Controllers\" />
-    <Folder Include="Domains\" />
     <Folder Include="Infrastructure\" />
   </ItemGroup>
 
