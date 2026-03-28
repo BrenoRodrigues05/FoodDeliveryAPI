@@ -40,6 +40,10 @@ namespace FoodDeliveryAPI.Context
                 .HasOne(c => c.Endereco)
                 .WithOne(e => e.Cliente)
                 .HasForeignKey<Endereco>(e => e.ClienteId);
+
+             builder.Entity<Produto>()
+                .Property(p => p.Preco)
+                .HasPrecision(10, 2);
         }
     }
 }
