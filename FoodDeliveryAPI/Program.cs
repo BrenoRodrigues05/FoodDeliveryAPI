@@ -1,3 +1,4 @@
+using FoodDeliveryAPI.Application.Middlewares;
 using FoodDeliveryAPI.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,10 @@ builder.Services.AddDbContext<FoodDeliveryAPIContext>(options =>
 );
 
 var app = builder.Build();
+
+// Use custom exception handling middleware
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
