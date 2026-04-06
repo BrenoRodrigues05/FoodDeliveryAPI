@@ -19,9 +19,10 @@ namespace FoodDeliveryAPI.Context
               builder.Entity<Pedido>()
               .HasMany(p => p.PedidoItens)
               .WithOne(p => p.Pedido)
-              .HasForeignKey(p => p.PedidoId);
+              .HasForeignKey(p => p.PedidoId)
+              .OnDelete(DeleteBehavior.Cascade);
 
-              builder.Entity<Pedido>()
+            builder.Entity<Pedido>()
                 .HasOne(p => p.Entregador)
                 .WithMany(e => e.Pedidos)
                 .HasForeignKey(p => p.EntregadorId);
@@ -44,6 +45,7 @@ namespace FoodDeliveryAPI.Context
              builder.Entity<Produto>()
                 .Property(p => p.Preco)
                 .HasPrecision(10, 2);
+
         }
     }
 }
