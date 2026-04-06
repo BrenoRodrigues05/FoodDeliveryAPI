@@ -1,5 +1,6 @@
 ﻿using FoodDeliveryAPI.Context;
 using FoodDeliveryAPI.Domains.Entities;
+using FoodDeliveryAPI.Domains.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDeliveryAPI.Infrastructure.Repositories
@@ -50,10 +51,9 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
             return pedido;
         }
-
         public async Task<bool> DeleteAsync(int id)
         {
-           
+
             var affected = await _context.Pedidos
             .Where(p => p.Id == id)
             .ExecuteDeleteAsync();
@@ -63,5 +63,16 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             return affected > 0;
         }
 
+       public async Task<Pedido> UpdateAsync(Pedido pedido)
+        {
+            var affected = await _context.Pedidos
+                .Where(p => p.Id == pedido.Id)
+                .ExecuteUpdateAsync(p => p
+                    .SetProperty(p => p.Status, pedido.Status)
+                    .SetProperty(p => p.EntregadorId, pedido.EntregadorId)
+                );
+            _logger.LogInformation("Pedido com ID {Id} atualizado.", pedido.Id);
+            return affected > 0 ? pedido : null;
+        }
     }
 }
