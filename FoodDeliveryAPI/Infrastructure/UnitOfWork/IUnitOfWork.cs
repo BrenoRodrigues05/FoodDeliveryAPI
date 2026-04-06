@@ -7,6 +7,7 @@ namespace FoodDeliveryAPI.Infrastructure.UnitOfWork
     {
    
         public IPedidoRepository PedidoRepository { get; }
+        public IEntregadorRepository EntregadorRepository { get; }
 
         Task<int> CommitAsync();
     }

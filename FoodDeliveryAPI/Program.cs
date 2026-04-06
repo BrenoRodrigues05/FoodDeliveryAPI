@@ -22,6 +22,7 @@ builder.Services.AddDbContext<FoodDeliveryAPIContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IEntregadorRepository, EntregadorRepository>();
 
 var app = builder.Build();
 
