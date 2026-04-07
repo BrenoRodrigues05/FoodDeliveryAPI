@@ -11,5 +11,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
         Task<bool> DeleteAsync (int id);
 
         Task <Entregador?> UpdateAsync (Entregador entregador);
+
+        Task<Entregador?> GetByNameAsync(string nome);
     }
 }
