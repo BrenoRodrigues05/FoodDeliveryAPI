@@ -1,4 +1,5 @@
 using FoodDeliveryAPI.Application.Middlewares;
+using FoodDeliveryAPI.Application.Services;
 using FoodDeliveryAPI.Context;
 using FoodDeliveryAPI.Infrastructure.Repositories;
 using FoodDeliveryAPI.Infrastructure.UnitOfWork;
@@ -23,6 +24,9 @@ builder.Services.AddDbContext<FoodDeliveryAPIContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IEntregadorRepository, EntregadorRepository>();
+
+// Register application services for dependency injection
+builder.Services.AddScoped<IPedidoService, PedidoService>();
 
 var app = builder.Build();
 
