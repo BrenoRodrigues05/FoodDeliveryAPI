@@ -24,6 +24,7 @@ builder.Services.AddDbContext<FoodDeliveryAPIContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IEntregadorRepository, EntregadorRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 
 // Register application services for dependency injection
 builder.Services.AddScoped<IPedidoService, PedidoService>();
