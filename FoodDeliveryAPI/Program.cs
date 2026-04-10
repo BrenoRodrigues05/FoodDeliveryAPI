@@ -26,6 +26,7 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IEntregadorRepository, EntregadorRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
+builder.Services.AddScoped<IPedidoItemRepository, PedidoItemRepository>();
 
 // Register application services for dependency injection
 builder.Services.AddScoped<IPedidoService, PedidoService>();
