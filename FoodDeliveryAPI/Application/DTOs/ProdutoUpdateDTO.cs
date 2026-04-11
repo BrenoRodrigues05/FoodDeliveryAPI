@@ -1,0 +1,8 @@
+﻿namespace FoodDeliveryAPI.Application.DTOs
+{
+    public class ProdutoUpdateDTO
+    {
+        public string Nome { get; set; }
+        public decimal Preco { get; set; }
+    }
+}
