@@ -1,4 +1,7 @@
-﻿using FoodDeliveryAPI.Domains.Entities;
+﻿using AutoMapper;
+using FoodDeliveryAPI.Application.DTOs;
+using FoodDeliveryAPI.Application.Mappings;
+using FoodDeliveryAPI.Domains.Entities;
 using FoodDeliveryAPI.Domains.Entities.Enums;
 using FoodDeliveryAPI.Infrastructure.Repositories;
 using FoodDeliveryAPI.Infrastructure.UnitOfWork;
@@ -11,26 +14,28 @@ namespace FoodDeliveryAPI.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<PedidoService> _logger;
         private readonly IEntregadorRepository _entregadorRepository;
+        public readonly IMapper _mapper;
 
-        public PedidoService(IPedidoRepository pedidoRepository, IUnitOfWork unitOfWork, ILogger<PedidoService> logger, IEntregadorRepository entregadorRepository)
+        public PedidoService(IPedidoRepository pedidoRepository, IUnitOfWork unitOfWork, ILogger<PedidoService> logger, IEntregadorRepository entregadorRepository, IMapper mapper)
         {
             _pedidoRepository = pedidoRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _entregadorRepository = entregadorRepository;
+            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<Pedido>> GetPedidosAsync()
+        public async Task<IEnumerable<PedidoResponseDTO>> GetPedidosAsync()
         {
             _logger.LogInformation("Buscando todos os pedidos.");
 
             var pedidos = await _pedidoRepository.GetAllAsync();
 
-            return pedidos;
+            return _mapper.Map<IEnumerable<PedidoResponseDTO>>(pedidos);
 
         }
 
-        public async Task<Pedido> GetPedidoByIdAsync(int id)
+        public async Task<PedidoResponseDTO> GetPedidoByIdAsync(int id)
         {
             if (id <= 0)
             {
@@ -44,26 +49,27 @@ namespace FoodDeliveryAPI.Application.Services
                 _logger.LogWarning("Pedido não encontrado com ID: {Id}", id);
                 throw new KeyNotFoundException($"Pedido com ID {id} não encontrado.");
             }
-            return pedido;
+           return _mapper.Map<PedidoResponseDTO>(pedido);
         }
 
-        public async Task<Pedido> CreatePedidoAsync(Pedido pedido)
+        public async Task<PedidoResponseDTO> CreatePedidoAsync(PedidoCreateDTO pedido)
         {
-            if (pedido == null)
+           if (pedido == null)
             {
-                _logger.LogWarning("Tentativa de criar pedido com dados nulos.");
-                throw new ArgumentNullException(nameof(pedido), "Pedido não pode ser nulo.");
+                _logger.LogWarning("Pedido para criação é nulo.");
+                throw new ArgumentNullException(nameof(pedido), "Pedido para criação não pode ser nulo.");
             }
-
-            var novoPedido = await _pedidoRepository.AddAsync(pedido);
-
-            novoPedido.Status = StatusPedido.Pendente;
-
+            if (pedido.Itens == null || !pedido.Itens.Any())
+            {
+                _logger.LogWarning("Pedido para criação deve conter pelo menos um item.");
+                throw new ArgumentException("Pedido para criação deve conter pelo menos um item.", nameof(pedido));
+            }
+            var pedidoEntity = _mapper.Map<Pedido>(pedido);
+            pedidoEntity.Status = StatusPedido.Pendente;
+            await _pedidoRepository.AddAsync(pedidoEntity);
             await _unitOfWork.CommitAsync();
-
-            _logger.LogInformation("Pedido criado com ID: {Id}", novoPedido.Id);
-
-            return novoPedido;
+            _logger.LogInformation("Pedido criado com ID: {Id}", pedidoEntity.Id);
+            return _mapper.Map<PedidoResponseDTO>(pedidoEntity);
         }
 
         public async Task<bool> DeletePedidoAsync(int id)
@@ -97,8 +103,18 @@ namespace FoodDeliveryAPI.Application.Services
 
         }
 
-        public async Task<Pedido> AtribuirEntregador(int pedidoId, int entregadorId)
+        public async Task<PedidoResponseDTO> AtribuirEntregadorAsync(int pedidoId, int entregadorId)
         {
+            if(pedidoId <= 0)
+            {
+                _logger.LogWarning("ID de pedido inválido para atribuição de entregador: {PedidoId}", pedidoId);
+                throw new ArgumentException("ID de pedido deve ser maior que zero.", nameof(pedidoId));
+            }
+            if(entregadorId <= 0)
+            {
+                _logger.LogWarning("ID de entregador inválido para atribuição ao pedido com ID: {PedidoId}. ID de entregador: {EntregadorId}", pedidoId, entregadorId);
+                throw new ArgumentException("ID de entregador deve ser maior que zero.", nameof(entregadorId));
+            }   
             var pedido = await _pedidoRepository.GetByIdAsync(pedidoId);
             if (pedido == null)
             {
@@ -134,12 +150,17 @@ namespace FoodDeliveryAPI.Application.Services
 
             await _unitOfWork.CommitAsync();
 
-            return await _pedidoRepository.GetByIdAsync(pedidoId);
+            return _mapper.Map<PedidoResponseDTO>(pedido);
 
         }
 
-        public async Task<Pedido> AtualizarStatusPedido(int pedidoId, string novoStatus)
+        public async Task<PedidoResponseDTO> AtualizarStatusPedidoAsync(int pedidoId, string novoStatus)
         {
+            if(pedidoId < 0)
+            {
+                _logger.LogWarning("ID de pedido inválido para atualização de status: {PedidoId}", pedidoId);
+                throw new ArgumentException("ID de pedido deve ser maior ou igual a zero.", nameof(pedidoId));
+            }
             var pedido = await _pedidoRepository.GetByIdAsync(pedidoId);
             if (pedido == null)
             {
@@ -195,7 +216,8 @@ namespace FoodDeliveryAPI.Application.Services
             _logger.LogInformation(
                 "Status do pedido {PedidoId} atualizado para {NovoStatus}",
                 pedidoId, status);
-            return pedido;
+            
+            return _mapper.Map<PedidoResponseDTO>(pedido);
         }
     }
 
