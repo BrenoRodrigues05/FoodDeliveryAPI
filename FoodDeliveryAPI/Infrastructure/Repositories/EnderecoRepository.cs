@@ -32,6 +32,8 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
         public async Task<Endereco> UpdateEnderecoAsync(Endereco endereco)
         {
             var enderecoExistente = await _context.Enderecos.FirstOrDefaultAsync(e => e.Id == endereco.Id);
+            if (enderecoExistente == null)
+                throw new KeyNotFoundException();
             enderecoExistente.Nome = endereco.Nome;
             enderecoExistente.Rua = endereco.Rua;
             _logger.LogInformation("Endereço atualizado com ID: {EnderecoId}", enderecoExistente.Id);
@@ -51,5 +53,11 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             return true;
         }
 
+        public async Task<Endereco?> GetEnderecoByClienteIdAsync(int clienteId)
+        {
+           var busca = await _context.Enderecos.AsNoTracking().FirstOrDefaultAsync(e => e.ClienteId == clienteId);
+            _logger.LogInformation("Busca por endereço com Cliente ID: {ClienteId} - Encontrado: {Encontrado}", clienteId, busca != null);
+            return busca;
+        }
     }
 }

@@ -8,5 +8,6 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
         Task<Endereco> CreateEnderecoAsync(Endereco endereco);
         Task<Endereco> UpdateEnderecoAsync(Endereco endereco);
         Task<bool> DeleteEnderecoAsync(int id);
+        Task<Endereco?> GetEnderecoByClienteIdAsync(int clienteId);
     }
 }
