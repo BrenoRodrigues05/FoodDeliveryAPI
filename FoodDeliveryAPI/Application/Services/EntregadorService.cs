@@ -1,4 +1,6 @@
-﻿using FoodDeliveryAPI.Domains.Entities;
+﻿using AutoMapper;
+using FoodDeliveryAPI.Application.DTOs;
+using FoodDeliveryAPI.Domains.Entities;
 using FoodDeliveryAPI.Infrastructure.Repositories;
 using FoodDeliveryAPI.Infrastructure.UnitOfWork;
 using System.Globalization;
@@ -12,24 +14,26 @@ namespace FoodDeliveryAPI.Application.Services
         private readonly IPedidoRepository _pedidoRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<EntregadorService> _logger;
+        private readonly IMapper _mapper;
 
-        public EntregadorService(IEntregadorRepository entregadorRepository, IPedidoRepository pedidoRepository, 
-            IUnitOfWork unitOfWork, ILogger<EntregadorService> logger)
+        public EntregadorService(IEntregadorRepository entregadorRepository, IPedidoRepository pedidoRepository,
+            IUnitOfWork unitOfWork, ILogger<EntregadorService> logger, IMapper mapper)
         {
             _entregadorRepository = entregadorRepository;
             _pedidoRepository = pedidoRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<Entregador>> GetEntregadoresAsync()
+        public async Task<IEnumerable<EntregadorResponseDTO>> GetEntregadoresAsync()
         {
             _logger.LogInformation("Recuperando lista de entregadores.");
             var entregadores = await _entregadorRepository.GetAllAsync();
-            return entregadores;
+            return _mapper.Map<IEnumerable<EntregadorResponseDTO>>(entregadores);
         }
 
-        public async Task<Entregador> GetEntregadorByIdAsync(int id)
+        public async Task<EntregadorResponseDTO> GetEntregadorByIdAsync(int id)
         {
            if(id <= 0)
             {
@@ -46,38 +50,29 @@ namespace FoodDeliveryAPI.Application.Services
             }
 
             _logger.LogInformation("Entregador encontrado: {Nome}", busca.Nome);
-            return busca;
-
+            return _mapper.Map<EntregadorResponseDTO>(busca);
         }
-        public async Task<Entregador> CreateEntregadorAsync(Entregador entregador)
+        public async Task<EntregadorResponseDTO> CreateEntregadorAsync(EntregadorCreateDTO entregador)
         {
-            if (entregador == null)
+           if(entregador == null)
             {
-                _logger.LogWarning("Entregador fornecido é nulo.");
-                throw new ArgumentNullException(nameof(entregador), "Entregador não pode ser nulo.");
+                _logger.LogWarning("Dados do entregador são nulos.");
+                throw new ArgumentNullException(nameof(entregador), "Dados do entregador não podem ser nulos.");
+            }
+            var busca = await _entregadorRepository.GetByNameAsync(entregador.Nome);
+
+            if(busca != null)
+            {
+                _logger.LogWarning("Entregador já existe com nome: {Nome}", entregador.Nome);
+                throw new InvalidOperationException($"Entregador com nome {entregador.Nome} já existe.");
             }
 
-            if (string.IsNullOrWhiteSpace(entregador.Nome))
-            {
-                _logger.LogWarning("Nome do entregador é inválido.");
-                throw new ArgumentException("Nome do entregador é obrigatório.", nameof(entregador.Nome));
-            }
-
-           var buscaExistente = await _entregadorRepository.GetByNameAsync(entregador.Nome);
-            if (buscaExistente != null)
-            {
-                _logger.LogWarning("Entregador com nome '{Nome}' já existe.", entregador.Nome);
-                throw new InvalidOperationException($"Entregador com nome '{entregador.Nome}' já existe.");
-            }
-            var novoEntregador = new Entregador
-            {
-                Nome = entregador.Nome,
-                Disponivel = entregador.Disponivel
-            };
+            var novoEntregador = _mapper.Map<Entregador>(entregador);
             await _entregadorRepository.CreateAsync(novoEntregador);
             await _unitOfWork.CommitAsync();
-            _logger.LogInformation("Novo entregador criado: {Nome}", novoEntregador.Nome);
-            return novoEntregador;
+            _logger.LogInformation("Entregador criado: {Nome}", novoEntregador.Nome);
+
+            return _mapper.Map<EntregadorResponseDTO>(novoEntregador);
 
         }
 
@@ -101,71 +96,34 @@ namespace FoodDeliveryAPI.Application.Services
             return true;
         }
 
-        public async Task<Entregador> AtualizarDisponibilidadeEntregador(int entregadorId, string novaDisponibilidade)
+        public async Task<EntregadorResponseDTO> AtualizarDisponibilidadeEntregadorAsync(int entregadorId, bool novaDisponibilidade)
         {
-            if (entregadorId <= 0)
+            if(entregadorId <= 0)
             {
                 _logger.LogWarning("ID do entregador é inválido: {Id}", entregadorId);
                 throw new ArgumentException("ID do entregador é inválido.", nameof(entregadorId));
             }
+            var busca = await _entregadorRepository.GetByIdAsync(entregadorId);
 
-            if (string.IsNullOrWhiteSpace(novaDisponibilidade))
-            {
-                _logger.LogWarning("Nova disponibilidade é inválida.");
-                throw new ArgumentException("Nova disponibilidade é obrigatória.", nameof(novaDisponibilidade));
-            }
-
-            var buscaEntregador = await _entregadorRepository.GetByIdAsync(entregadorId);
-
-            if (buscaEntregador == null)
+            if(busca == null)
             {
                 _logger.LogWarning("Entregador não encontrado com ID: {Id}", entregadorId);
                 throw new KeyNotFoundException($"Entregador com ID {entregadorId} não encontrado.");
             }
 
-            var normalizedDisponibilidade = RemoverAcentos(novaDisponibilidade)
-                    .Trim()
-                    .ToLower();
-
-            switch (normalizedDisponibilidade) 
-            { 
-                case "disponivel":
-                    buscaEntregador.Disponivel = true;
-                    _logger.LogInformation("Entregador {Nome} agora está disponível.", buscaEntregador.Nome);
-                    break;
-                case "indisponivel":
-                    buscaEntregador.Disponivel = false;
-                    _logger.LogInformation("Entregador {Nome} agora está indisponível.", buscaEntregador.Nome);
-                     break;
-
-                default: _logger.LogWarning("Valor inválido: {Disponibilidade}", novaDisponibilidade);
-                    throw new ArgumentException("Disponibilidade deve ser 'disponível' ou 'indisponível'.");
-
-
-            }
-
-            await _entregadorRepository.UpdateAsync(buscaEntregador);
-            await _unitOfWork.CommitAsync();
-            return buscaEntregador;
-
-        }
-
-        // Método auxiliar para remover acentos de uma string
-        public static string RemoverAcentos(string texto)
-        {
-            var normalizedString = texto.Normalize(NormalizationForm.FormD);
-            var stringBuilder = new StringBuilder();
-
-            foreach (var c in normalizedString)
+            if(novaDisponibilidade == busca.Disponivel)
             {
-                var unicodeCategory = Char.GetUnicodeCategory(c);
-                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
-                {
-                    stringBuilder.Append(c);
-                }
+                _logger.LogInformation("Entregador {Nome} já está com a disponibilidade {Disponibilidade}.", busca.Nome, novaDisponibilidade);
+                return _mapper.Map<EntregadorResponseDTO>(busca);
             }
 
-            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+            busca.Disponivel = novaDisponibilidade;
+
+            await _entregadorRepository.UpdateAsync(busca);
+            await _unitOfWork.CommitAsync();
+            _logger.LogInformation("Disponibilidade do entregador {Nome} atualizada para {Disponibilidade}.", busca.Nome, novaDisponibilidade);
+            return _mapper.Map<EntregadorResponseDTO>(busca);
+
         }
 
     }

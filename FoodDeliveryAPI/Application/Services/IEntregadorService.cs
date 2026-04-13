@@ -1,14 +1,15 @@
-﻿using FoodDeliveryAPI.Domains.Entities;
+﻿using FoodDeliveryAPI.Application.DTOs;
+using FoodDeliveryAPI.Domains.Entities;
 
 namespace FoodDeliveryAPI.Application.Services
 {
     public interface IEntregadorService
     {
-        Task<IEnumerable<Entregador>> GetEntregadoresAsync();
-        Task<Entregador> GetEntregadorByIdAsync(int id);
-        Task<Entregador> CreateEntregadorAsync(Entregador entregador);
+        Task<IEnumerable<EntregadorResponseDTO>> GetEntregadoresAsync();
+        Task<EntregadorResponseDTO> GetEntregadorByIdAsync(int id);
+        Task<EntregadorResponseDTO> CreateEntregadorAsync(EntregadorCreateDTO entregador);
         Task<bool> DeleteEntregadorAsync(int id);
-        Task<Entregador> AtualizarDisponibilidadeEntregador(int entregadorId, string novaDisponibilidade);
+        Task<EntregadorResponseDTO> AtualizarDisponibilidadeEntregadorAsync(int entregadorId, bool novaDisponibilidade);
 
     }
 }
