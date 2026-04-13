@@ -74,5 +74,19 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             _logger.LogInformation("Pedido com ID {Id} atualizado.", pedido.Id);
             return affected > 0 ? pedido : null;
         }
+
+        public async Task<IEnumerable<Pedido>> GetByClienteIdAsync(int clienteId)
+        {
+            var busca = await _context.Pedidos
+                .AsNoTracking()
+                .Where(p => p.ClienteId == clienteId)
+                .Include(p => p.Cliente)
+                .Include(p => p.Entregador)
+                .Include(p => p.PedidoItens)
+                    .ThenInclude(pi => pi.Produto)
+                .ToListAsync();
+
+            return busca.ToList();
+        }
     }
 }

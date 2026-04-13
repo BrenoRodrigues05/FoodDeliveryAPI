@@ -31,6 +31,8 @@ builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 
 // Register application services for dependency injection
 builder.Services.AddScoped<IPedidoService, PedidoService>();
+builder.Services.AddScoped<IEntregadorService, EntregadorService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
 
 var app = builder.Build();
 

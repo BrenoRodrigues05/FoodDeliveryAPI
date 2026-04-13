@@ -9,6 +9,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
         Task<Pedido> AddAsync(Pedido pedido);
         Task<bool> DeleteAsync(int id);
         Task<Pedido> UpdateAsync(Pedido pedido);
+        Task<IEnumerable<Pedido>> GetByClienteIdAsync(int clienteId);
 
     }
 }
