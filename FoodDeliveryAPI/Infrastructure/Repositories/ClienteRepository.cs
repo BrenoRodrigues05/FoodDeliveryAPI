@@ -24,8 +24,8 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
         public async Task<Cliente?> GetByIdAsync(int id)
         {
-           var cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
-           
+            var cliente = await _context.Clientes.Include(p=> p.Pedidos).AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+
             _logger.LogInformation("Busca de cliente por ID realizada. ID: {Id}, Cliente encontrado: {Found}", id, cliente != null);
             return cliente;
         }
