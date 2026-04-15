@@ -14,15 +14,17 @@ namespace FoodDeliveryAPI.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<PedidoService> _logger;
         private readonly IEntregadorRepository _entregadorRepository;
+        private readonly IClienteRepository _clienteRepository;
         public readonly IMapper _mapper;
 
-        public PedidoService(IPedidoRepository pedidoRepository, IUnitOfWork unitOfWork, ILogger<PedidoService> logger, IEntregadorRepository entregadorRepository, IMapper mapper)
+        public PedidoService(IPedidoRepository pedidoRepository, IUnitOfWork unitOfWork, ILogger<PedidoService> logger, IEntregadorRepository entregadorRepository, IMapper mapper, IClienteRepository clienteRepository)
         {
             _pedidoRepository = pedidoRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _entregadorRepository = entregadorRepository;
             _mapper = mapper;
+            _clienteRepository = clienteRepository;
         }
 
         public async Task<IEnumerable<PedidoResponseDTO>> GetPedidosAsync()
@@ -52,12 +54,28 @@ namespace FoodDeliveryAPI.Application.Services
            return _mapper.Map<PedidoResponseDTO>(pedido);
         }
 
-        public async Task<PedidoResponseDTO> CreatePedidoAsync(PedidoCreateDTO pedido)
+        public async Task<PedidoResponseDTO> CreatePedidoAsync(PedidoCreateDTO pedido, int clienteId)
         {
            if (pedido == null)
             {
                 _logger.LogWarning("Pedido para criação é nulo.");
                 throw new ArgumentNullException(nameof(pedido), "Pedido para criação não pode ser nulo.");
+            }
+           if (clienteId <= 0)
+            {
+                _logger.LogWarning("ID de cliente inválido para criação de pedido: {ClienteId}", clienteId);
+                throw new ArgumentException("ID de cliente deve ser maior que zero.", nameof(clienteId));
+            }
+           var buscaCliente = await _clienteRepository.GetPedidosCliente(clienteId);
+            if(buscaCliente == null)
+            {
+                _logger.LogWarning("Cliente não encontrado para criação de pedido com ID: {ClienteId}", clienteId);
+                throw new KeyNotFoundException($"Cliente com ID {clienteId} não encontrado para criação de pedido.");
+            }
+            if(buscaCliente.Pedidos != null && buscaCliente.Pedidos.Any(p => p.Status == StatusPedido.Pendente || p.Status == StatusPedido.EmTransito))
+            {
+                _logger.LogWarning("Não é permitido criar um novo pedido para o cliente com ID: {ClienteId} porque ele tem pedidos pendentes ou em trânsito.", clienteId);
+                throw new InvalidOperationException($"Não é permitido criar um novo pedido para o cliente com ID {clienteId} porque ele tem pedidos pendentes ou em trânsito.");
             }
             if (pedido.Itens == null || !pedido.Itens.Any())
             {
@@ -65,6 +83,7 @@ namespace FoodDeliveryAPI.Application.Services
                 throw new ArgumentException("Pedido para criação deve conter pelo menos um item.", nameof(pedido));
             }
             var pedidoEntity = _mapper.Map<Pedido>(pedido);
+            pedidoEntity.ClienteId = clienteId;
             pedidoEntity.Status = StatusPedido.Pendente;
             await _pedidoRepository.AddAsync(pedidoEntity);
             await _unitOfWork.CommitAsync();
@@ -127,7 +146,7 @@ namespace FoodDeliveryAPI.Application.Services
                 throw new InvalidOperationException($"Não é permitido atribuir entregador ao pedido com ID {pedidoId} porque o status do pedido é '{pedido.Status}'.");
             }
 
-            var entregador = await _entregadorRepository.GetByIdAsync(entregadorId);
+            var entregador = await _entregadorRepository.GetPedidosEntregador(entregadorId);
             if (entregador == null)
             {
                 _logger.LogWarning("Entregador não encontrado para atribuição com ID: {EntregadorId}", entregadorId);
