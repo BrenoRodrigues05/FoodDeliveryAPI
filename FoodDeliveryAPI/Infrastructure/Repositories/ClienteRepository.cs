@@ -24,7 +24,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
         public async Task<Cliente?> GetByIdAsync(int id)
         {
-            var cliente = await _context.Clientes.Include(p=> p.Pedidos).AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+            var cliente = await _context.Clientes.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
 
             _logger.LogInformation("Busca de cliente por ID realizada. ID: {Id}, Cliente encontrado: {Found}", id, cliente != null);
             return cliente;
@@ -74,7 +74,14 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             return cliente;
         }
 
-
-       
+        public async Task<Cliente?> GetPedidosCliente(int id)
+        {
+            var cliente = await _context.Clientes
+                .AsNoTracking()
+                .Include(c => c.Pedidos)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            _logger.LogInformation("Busca de cliente com pedidos realizada. ID: {Id}, Cliente encontrado: {Found}", id, cliente != null);
+            return cliente;
+        }
     }
 }

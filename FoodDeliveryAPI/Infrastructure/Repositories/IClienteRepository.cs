@@ -10,5 +10,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
         Task<Cliente> UpdateAsync(Cliente cliente);
         Task<bool> DeleteAsync(int id);
         Task<Cliente?> GetByEmailAsync(string email);
+
+        Task<Cliente?> GetPedidosCliente(int id);
     }
 }

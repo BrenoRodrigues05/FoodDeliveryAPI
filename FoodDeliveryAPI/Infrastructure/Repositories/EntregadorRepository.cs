@@ -1,5 +1,6 @@
 ﻿using FoodDeliveryAPI.Context;
 using FoodDeliveryAPI.Domains.Entities;
+using FoodDeliveryAPI.Domains.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDeliveryAPI.Infrastructure.Repositories
@@ -72,6 +73,21 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
                     .FirstOrDefaultAsync(e => e.Nome == nome);
 
             return busca;
+        }
+
+        public async Task<Entregador?> GetPedidosEntregador(int id)
+        {
+           var entregador = await _context.Entregadores
+                    .Include(e => e.Pedidos)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(e => e.Id == id);
+            if (entregador == null)
+            {
+                _logger.LogWarning("Entregador with ID {Id} not found when fetching orders.", id);
+                return null;
+            }
+            _logger.LogInformation($"Retrieved entregador with ID {id} and their orders.");
+            return entregador;
         }
     }
 }
