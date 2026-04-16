@@ -33,6 +33,7 @@ builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IEntregadorService, EntregadorService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IEnderecoService, EnderecoService>();
 
 var app = builder.Build();
 
