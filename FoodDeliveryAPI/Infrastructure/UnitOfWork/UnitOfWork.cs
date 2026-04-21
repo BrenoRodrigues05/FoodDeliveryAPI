@@ -10,11 +10,25 @@ namespace FoodDeliveryAPI.Infrastructure.UnitOfWork
         public IPedidoRepository PedidoRepository { get; }
         public IEntregadorRepository EntregadorRepository { get; }
 
-        public UnitOfWork(FoodDeliveryAPIContext context, IPedidoRepository pedidoRepository, IEntregadorRepository entregadorRepository)
+        public IClienteRepository ClienteRepository { get; }
+
+        public IProdutoRepository ProdutoRepository { get; }
+
+        public IEnderecoRepository EnderecoRepository { get; }
+
+        public IPedidoItemRepository PedidoItemRepository { get; }
+        public IPalavrasProibidasRepository PalavrasProibidasRepository { get; }
+
+        public UnitOfWork(FoodDeliveryAPIContext context, IPedidoRepository pedidoRepository, IEntregadorRepository entregadorRepository, IClienteRepository clienteRepository, IProdutoRepository produtoRepository, IEnderecoRepository enderecoRepository, IPedidoItemRepository pedidoItemRepository, IPalavrasProibidasRepository palavrasProibidasRepository)
         {
             _context = context;
             PedidoRepository = pedidoRepository;
             EntregadorRepository = entregadorRepository;
+            ClienteRepository = clienteRepository;
+            ProdutoRepository = produtoRepository;
+            EnderecoRepository = enderecoRepository;
+            PedidoItemRepository = pedidoItemRepository;
+            PalavrasProibidasRepository = palavrasProibidasRepository;
         }
 
         public Task<int> CommitAsync() => _context.SaveChangesAsync();

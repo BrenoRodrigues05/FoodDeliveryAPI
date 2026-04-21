@@ -9,6 +9,16 @@ namespace FoodDeliveryAPI.Infrastructure.UnitOfWork
         public IPedidoRepository PedidoRepository { get; }
         public IEntregadorRepository EntregadorRepository { get; }
 
+        public IPalavrasProibidasRepository PalavrasProibidasRepository { get; }
+
+        public IClienteRepository ClienteRepository { get; }
+
+        public IProdutoRepository ProdutoRepository { get; }
+
+        public IEnderecoRepository EnderecoRepository { get; }
+
+        public IPedidoItemRepository PedidoItemRepository { get; }
+
         Task<int> CommitAsync();
     }
 }
