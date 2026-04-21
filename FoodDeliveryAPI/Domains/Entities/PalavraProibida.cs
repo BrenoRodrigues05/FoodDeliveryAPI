@@ -2,7 +2,7 @@
 {
     public class PalavraProibida
     {
-        public int Id { get; private set; }
+        public int Id { get; set; }
         public string Palavra { get; private set; }
         
         public PalavraProibida(string palavra)

@@ -1,5 +1,6 @@
 ﻿using FoodDeliveryAPI.Domains.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace FoodDeliveryAPI.Context
 {
@@ -47,6 +48,12 @@ namespace FoodDeliveryAPI.Context
                 .Property(p => p.Preco)
                 .HasPrecision(10, 2);
 
+            builder.Entity<PalavraProibida>().HasData(
+            new PalavraProibida("xxx") { Id = 1 },
+            new PalavraProibida("idiota") { Id = 2 },
+            new PalavraProibida("burro") { Id = 3 }
+            // adicionar mais palavras proibidas conforme necessário
+    );
         }
     }
 }
