@@ -1,3 +1,5 @@
+using AutoMapper;
+using FoodDeliveryAPI.Application.Mappings;
 using FoodDeliveryAPI.Application.Middlewares;
 using FoodDeliveryAPI.Application.Services;
 using FoodDeliveryAPI.Context;
@@ -28,6 +30,9 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
 builder.Services.AddScoped<IPedidoItemRepository, PedidoItemRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+
+// Register AutoMapper for dependency injection
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Register application services for dependency injection
 builder.Services.AddScoped<IPedidoService, PedidoService>();

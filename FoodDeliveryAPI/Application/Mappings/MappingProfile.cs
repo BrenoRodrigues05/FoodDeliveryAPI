@@ -14,16 +14,11 @@ namespace FoodDeliveryAPI.Application.Mappings
 
             // Mapping configurations for Pedido
             CreateMap<Pedido, PedidoCreateDTO>().ReverseMap();
-            CreateMap<Pedido, PedidoResponseDTO>().ReverseMap();
+            CreateMap<Pedido, PedidoResponseDTO>();
 
             // Mapping configurations for PedidoItem
             CreateMap<PedidoItem, PedidoItemResponseDTO>();
             CreateMap<PedidoItemCreateDTO, PedidoItem>();
-
-            // Mapping configurations for Produto
-            CreateMap<Produto, ProdutoCreateDTO>().ReverseMap();
-            CreateMap<Produto, ProdutoResponseDTO>().ReverseMap();
-            CreateMap<Produto, ProdutoUpdateDTO>();
 
             // Mapping configurations for Entregador
             CreateMap<Entregador, EntregadorCreateDTO>().ReverseMap();
