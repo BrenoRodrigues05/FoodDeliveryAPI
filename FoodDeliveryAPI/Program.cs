@@ -30,6 +30,7 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
 builder.Services.AddScoped<IPedidoItemRepository, PedidoItemRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<IPalavrasProibidasRepository, PalavrasProibidasRepository>();
 
 // Register AutoMapper for dependency injection
 builder.Services.AddAutoMapper(typeof(MappingProfile));
