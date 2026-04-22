@@ -15,15 +15,17 @@ namespace FoodDeliveryAPI.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<EntregadorService> _logger;
         private readonly IMapper _mapper;
+        private readonly IPalavrasProibidasService _palavrasProibidasService;
 
         public EntregadorService(IEntregadorRepository entregadorRepository, IPedidoRepository pedidoRepository,
-            IUnitOfWork unitOfWork, ILogger<EntregadorService> logger, IMapper mapper)
+            IUnitOfWork unitOfWork, ILogger<EntregadorService> logger, IMapper mapper, IPalavrasProibidasService palavrasProibidasService)
         {
             _entregadorRepository = entregadorRepository;
             _pedidoRepository = pedidoRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _mapper = mapper;
+            _palavrasProibidasService = palavrasProibidasService;
         }
 
         public async Task<IEnumerable<EntregadorResponseDTO>> GetEntregadoresAsync()
@@ -65,6 +67,12 @@ namespace FoodDeliveryAPI.Application.Services
             {
                 _logger.LogWarning("Entregador já existe com nome: {Nome}", entregador.Nome);
                 throw new InvalidOperationException($"Entregador com nome {entregador.Nome} já existe.");
+            }
+
+            if (await _palavrasProibidasService.ContemPalavraProibida(entregador.Nome))
+            {
+                _logger.LogWarning("Nome do entregador contém palavras proibidas: {Nome}", entregador.Nome);
+                throw new InvalidOperationException("Nome do entregador contém palavras proibidas.");
             }
 
             var novoEntregador = _mapper.Map<Entregador>(entregador);

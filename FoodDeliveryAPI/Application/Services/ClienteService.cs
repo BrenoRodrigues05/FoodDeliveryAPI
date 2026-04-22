@@ -15,9 +15,10 @@ namespace FoodDeliveryAPI.Application.Services
         private readonly ILogger<ClienteService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPalavrasProibidasService _palavrasProibidasService;
 
         public ClienteService(IClienteRepository clienteRepository, IEnderecoRepository enderecoRepository, IPedidoRepository
-            pedidoRepository, IUnitOfWork unitOfWork, IMapper mapper, ILogger<ClienteService> logger)
+            pedidoRepository, IUnitOfWork unitOfWork, IMapper mapper, ILogger<ClienteService> logger, IPalavrasProibidasService palavrasProibidasService)
         {
             _clienteRepository = clienteRepository;
             _enderecoRepository = enderecoRepository;
@@ -25,6 +26,7 @@ namespace FoodDeliveryAPI.Application.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _palavrasProibidasService = palavrasProibidasService;
         }
 
         public async Task<IEnumerable<ClienteResponseDTO>> GetAllClientesAsync()
@@ -85,6 +87,13 @@ namespace FoodDeliveryAPI.Application.Services
             {
                 _logger.LogWarning("Cliente já existe com email: {Email}", cliente.Email);
                 throw new InvalidOperationException($"Cliente com email {cliente.Email} já existe.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(cliente.Nome) && await _palavrasProibidasService.ContemPalavraProibida(cliente.Nome))
+            {
+                _logger.LogWarning("Validação falhou: nome do cliente contém palavras proibidas.");
+
+                throw new ArgumentException("Nome do cliente contém palavras proibidas.");
             }
 
             var novoCliente = _mapper.Map<Cliente>(cliente);
