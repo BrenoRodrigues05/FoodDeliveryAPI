@@ -40,6 +40,9 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IEntregadorService, EntregadorService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IEnderecoService, EnderecoService>();
+builder.Services.AddScoped<IPedidoItemService, PedidoItemService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
+builder.Services.AddScoped<IPalavrasProibidasService, PalavrasProibidasService>();
 
 var app = builder.Build();
 

@@ -56,15 +56,22 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<Produto?> GetProdutoByNomeAsync(string nome)
+        public async Task<IEnumerable<Produto>> GetProdutosByNomeAsync(string nome)
         {
-            var busca = await _context.Produtos
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Nome == nome);
+            var busca = await _context.Produtos.Where(p => p.Nome.Contains(nome)).AsNoTracking().ToListAsync();
+
+            _logger.LogInformation("ProdutoRepository: GetProdutosByNomeAsync - Produtos buscados por nome: {Nome}", nome);
 
             return busca;
         }
 
-       
+        public async Task<IEnumerable<Produto>> GetProdutosByPrecoAsync(decimal preco)
+        {
+            var busca = await _context.Produtos.Where(p => p.Preco == preco).AsNoTracking().ToListAsync();
+
+            _logger.LogInformation("ProdutoRepository: GetProdutosByPrecoAsync - Produtos buscados por preço: {Preco}", preco);
+
+            return busca;
+        }
     }
 }
