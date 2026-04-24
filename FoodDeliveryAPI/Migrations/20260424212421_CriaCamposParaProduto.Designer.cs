@@ -2,6 +2,7 @@
 using FoodDeliveryAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FoodDeliveryAPI.Migrations
 {
     [DbContext(typeof(FoodDeliveryAPIContext))]
-    partial class FoodDeliveryAPIContextModelSnapshot : ModelSnapshot
+    [Migration("20260424212421_CriaCamposParaProduto")]
+    partial class CriaCamposParaProduto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
