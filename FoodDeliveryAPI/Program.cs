@@ -28,7 +28,6 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IEntregadorRepository, EntregadorRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
-builder.Services.AddScoped<IPedidoItemRepository, PedidoItemRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IPalavrasProibidasRepository, PalavrasProibidasRepository>();
 
@@ -40,7 +39,6 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IEntregadorService, EntregadorService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IEnderecoService, EnderecoService>();
-builder.Services.AddScoped<IPedidoItemService, PedidoItemService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IPalavrasProibidasService, PalavrasProibidasService>();
 

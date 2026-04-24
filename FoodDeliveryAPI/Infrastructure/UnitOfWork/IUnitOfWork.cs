@@ -17,7 +17,6 @@ namespace FoodDeliveryAPI.Infrastructure.UnitOfWork
 
         public IEnderecoRepository EnderecoRepository { get; }
 
-        public IPedidoItemRepository PedidoItemRepository { get; }
 
         Task<int> CommitAsync();
     }
