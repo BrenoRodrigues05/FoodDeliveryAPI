@@ -180,5 +180,18 @@ namespace FoodDeliveryAPI.Application.Services
             return true;
         }
 
+        public async Task<IEnumerable<ProdutoResponseDTO>> GetDisponiveisProdutosAsync()
+        {
+            var produtosDisponiveis = await _produtoRepository.GetDisponiveisAsync();
+
+            if(!produtosDisponiveis.Any())
+            {
+                _logger.LogWarning("Nenhum produto disponível encontrado.");
+                throw new KeyNotFoundException("Nenhum produto disponível encontrado.");
+            }
+
+            _logger.LogInformation("Produtos disponíveis encontrados.");
+            return _mapper.Map<IEnumerable<ProdutoResponseDTO>>(produtosDisponiveis);
+        }
     }
 }

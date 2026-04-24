@@ -17,7 +17,12 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
         public async Task<Produto?> GetProdutoByIdAsync(int id)
         {
-            var busca = await _context.Produtos.Include(p=> p.PedidoItens).AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+            var busca = await _context.Produtos
+                .Include(p=> p.PedidoItens)
+                .Include(d => d.Descricao)
+                .Include(c => c.Disponivel)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id);
            _logger.LogInformation("ProdutoRepository: GetProdutoByIdAsync - Produto buscado por ID: {ProdutoId}", id);
             return busca;
         }
@@ -39,6 +44,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             }
             produtoExistente.Nome = produto.Nome;
             produtoExistente.Preco = produto.Preco;
+            produtoExistente.Descricao = produto.Descricao;
             _logger.LogInformation("ProdutoRepository: UpdateProdutoAsync - Produto atualizado: {ProdutoId}", produtoExistente.Id);
             return produtoExistente;
         }
@@ -70,6 +76,16 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             var busca = await _context.Produtos.Where(p => p.Preco == preco).AsNoTracking().ToListAsync();
 
             _logger.LogInformation("ProdutoRepository: GetProdutosByPrecoAsync - Produtos buscados por preço: {Preco}", preco);
+
+            return busca;
+        }
+
+
+        public async Task<IEnumerable<Produto>> GetDisponiveisAsync()
+        {
+            var busca = await _context.Produtos.Where(p => p.Disponivel).AsNoTracking().ToListAsync();
+
+            _logger.LogInformation("ProdutoRepository: GetDisponiveisAsync - Produtos disponíveis buscados");
 
             return busca;
         }

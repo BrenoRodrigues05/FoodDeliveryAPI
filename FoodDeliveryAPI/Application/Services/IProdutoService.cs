@@ -8,6 +8,8 @@ namespace FoodDeliveryAPI.Application.Services
         Task<IEnumerable<ProdutoResponseDTO>> GetProdutosByNomeAsync(string nome);
 
         Task<IEnumerable<ProdutoResponseDTO>> GetProdutosByPreco(decimal preco);
+
+        Task<IEnumerable<ProdutoResponseDTO>> GetDisponiveisProdutosAsync();
         Task<ProdutoResponseDTO> CreateProdutoAsync(ProdutoCreateDTO produto);
 
         Task<ProdutoResponseDTO> GetProdutoByIdAsync(int id);
