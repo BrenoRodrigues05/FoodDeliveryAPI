@@ -98,6 +98,15 @@ namespace FoodDeliveryAPI.Application.Services
                 _logger.LogWarning("Entregador não encontrado com ID: {Id}", id);
                 throw new KeyNotFoundException($"Entregador com ID {id} não encontrado.");
             }
+
+            var buscaPedidos = await _pedidoRepository.GetEmTransitoByEntregador(id);
+
+           if (buscaPedidos != null)
+            {
+                _logger.LogWarning("Não é possível deletar o entregador {Nome} porque ele tem pedidos em trânsito.", busca.Nome);
+                throw new InvalidOperationException($"Não é possível deletar o entregador {busca.Nome} porque ele tem pedidos em trânsito.");
+            }
+
             await _entregadorRepository.DeleteAsync(id);
             await _unitOfWork.CommitAsync();
             _logger.LogInformation("Entregador deletado: {Nome}", busca.Nome);
@@ -119,7 +128,15 @@ namespace FoodDeliveryAPI.Application.Services
                 throw new KeyNotFoundException($"Entregador com ID {entregadorId} não encontrado.");
             }
 
-            if(novaDisponibilidade == busca.Disponivel)
+            var buscaPedidos = await _pedidoRepository.GetEmTransitoByEntregador(entregadorId);
+
+            if(buscaPedidos != null && novaDisponibilidade == true)
+            {
+                _logger.LogWarning("Não é possível disponibilizar o entregador {Nome} porque ele tem pedidos em trânsito.", busca.Nome);
+                throw new InvalidOperationException($"Não é possível disponibilizar o entregador {busca.Nome} porque ele tem pedidos em trânsito.");
+            }
+
+            if (novaDisponibilidade == busca.Disponivel)
             {
                 _logger.LogInformation("Entregador {Nome} já está com a disponibilidade {Disponibilidade}.", busca.Nome, novaDisponibilidade);
                 return _mapper.Map<EntregadorResponseDTO>(busca);
