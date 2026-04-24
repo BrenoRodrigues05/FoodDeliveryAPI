@@ -89,5 +89,23 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
             return busca.ToList();
         }
+
+        public async Task<Pedido> GetEmTransitoByEntregador(int entregadorId)
+        {
+            var busca = await _context.Pedidos
+                .AsNoTracking()
+                .Where(p => p.EntregadorId == entregadorId && p.Status == StatusPedido.EmTransito)
+                .Include(p => p.Cliente)
+                .Include(p => p.Entregador)
+                .FirstOrDefaultAsync();
+
+            if( busca == null)
+            {
+                _logger.LogInformation("Nenhum pedido em trânsito encontrado para o entregador com ID {Id}.", entregadorId);
+                throw new KeyNotFoundException($"Nenhum pedido em trânsito encontrado para o entregador com ID {entregadorId}.");
+            }
+
+            return busca;
+        }
     }
 }
