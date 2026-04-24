@@ -35,6 +35,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             var busca = await _context.Pedidos
                 .Include(p => p.Cliente)
                 .Include(p => p.Entregador)
+                .Include(p => p.Status)
                 .Include(p => p.PedidoItens)
                     .ThenInclude(pi => pi.Produto)
                 .FirstOrDefaultAsync(p => p.Id == id);
