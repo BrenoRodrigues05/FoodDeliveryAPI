@@ -1,12 +1,14 @@
-using AutoMapper;
 using FoodDeliveryAPI.Application.Mappings;
 using FoodDeliveryAPI.Application.Middlewares;
 using FoodDeliveryAPI.Application.Services;
 using FoodDeliveryAPI.Context;
+using FoodDeliveryAPI.Domains.Entities;
 using FoodDeliveryAPI.Infrastructure.Repositories;
 using FoodDeliveryAPI.Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +28,35 @@ builder.Services.AddDbContext<FoodDeliveryAPIContext>(options =>
 builder.Services.AddAuthentication("Bearer").AddJwtBearer();
 builder.Services.AddAuthorization();
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+// Configure Identity for user management
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<FoodDeliveryAPIContext>()
     .AddDefaultTokenProviders();
+
+
+// Configure JWT authentication
+var secretKey = builder.Configuration["Jwt:SecretKey"] ?? throw new ArgumentNullException("SecretKey inválida.");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ClockSkew = TimeSpan.Zero,
+        ValidAudience = builder.Configuration["Jwt:ValidAudience"],
+        ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretKey))
+    };
+});
 
 // Register repositories and unit of work for dependency injection
 
