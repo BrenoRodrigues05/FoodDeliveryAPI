@@ -15,9 +15,12 @@ namespace FoodDeliveryAPI.Application.Services
         private readonly ILogger<PedidoService> _logger;
         private readonly IEntregadorRepository _entregadorRepository;
         private readonly IClienteRepository _clienteRepository;
+        private readonly IProdutoRepository _produtoRepository;
         public readonly IMapper _mapper;
 
-        public PedidoService(IPedidoRepository pedidoRepository, IUnitOfWork unitOfWork, ILogger<PedidoService> logger, IEntregadorRepository entregadorRepository, IMapper mapper, IClienteRepository clienteRepository)
+        public PedidoService(IPedidoRepository pedidoRepository, IUnitOfWork unitOfWork, ILogger<PedidoService> logger, 
+            IEntregadorRepository entregadorRepository, IMapper mapper, IClienteRepository clienteRepository, 
+            IProdutoRepository produtoRepository)
         {
             _pedidoRepository = pedidoRepository;
             _unitOfWork = unitOfWork;
@@ -25,6 +28,7 @@ namespace FoodDeliveryAPI.Application.Services
             _entregadorRepository = entregadorRepository;
             _mapper = mapper;
             _clienteRepository = clienteRepository;
+            _produtoRepository = produtoRepository;
         }
 
         public async Task<IEnumerable<PedidoResponseDTO>> GetPedidosAsync()
@@ -54,41 +58,74 @@ namespace FoodDeliveryAPI.Application.Services
            return _mapper.Map<PedidoResponseDTO>(pedido);
         }
 
-        public async Task<PedidoResponseDTO> CreatePedidoAsync(PedidoCreateDTO pedido, int clienteId)
+        public async Task<PedidoResponseDTO> CreatePedidoAsync(PedidoCreateDTO dto, int clienteId)
         {
-           if (pedido == null)
+            if (dto == null || dto.Itens == null || !dto.Itens.Any())
             {
-                _logger.LogWarning("Pedido para criação é nulo.");
-                throw new ArgumentNullException(nameof(pedido), "Pedido para criação não pode ser nulo.");
+                _logger.LogWarning("Pedido inválido.");
+                throw new ArgumentException("Pedido deve conter itens.");
             }
-           if (clienteId <= 0)
+
+            if (clienteId <= 0)
             {
-                _logger.LogWarning("ID de cliente inválido para criação de pedido: {ClienteId}", clienteId);
-                throw new ArgumentException("ID de cliente deve ser maior que zero.", nameof(clienteId));
+                _logger.LogWarning("ClienteId inválido: {ClienteId}", clienteId);
+                throw new ArgumentException("ClienteId inválido.");
             }
-           var buscaCliente = await _clienteRepository.GetPedidosCliente(clienteId);
-            if(buscaCliente == null)
+
+            var cliente = await _clienteRepository.GetByIdAsync(clienteId);
+
+            if (cliente == null)
             {
-                _logger.LogWarning("Cliente não encontrado para criação de pedido com ID: {ClienteId}", clienteId);
-                throw new KeyNotFoundException($"Cliente com ID {clienteId} não encontrado para criação de pedido.");
+                _logger.LogWarning("Cliente não encontrado: {ClienteId}", clienteId);
+                throw new KeyNotFoundException("Cliente não encontrado.");
             }
-            if(buscaCliente.Pedidos != null && buscaCliente.Pedidos.Any(p => p.Status == StatusPedido.Pendente || p.Status == StatusPedido.EmTransito))
+
+            var pedidosCliente = await _pedidoRepository.GetByClienteIdAsync(clienteId);
+
+            if (pedidosCliente.Any(p => p.Status == StatusPedido.Pendente || p.Status == StatusPedido.EmTransito))
             {
-                _logger.LogWarning("Não é permitido criar um novo pedido para o cliente com ID: {ClienteId} porque ele tem pedidos pendentes ou em trânsito.", clienteId);
-                throw new InvalidOperationException($"Não é permitido criar um novo pedido para o cliente com ID {clienteId} porque ele tem pedidos pendentes ou em trânsito.");
+                _logger.LogWarning("Cliente já possui pedido ativo: {ClienteId}", clienteId);
+                throw new InvalidOperationException("Cliente já possui pedido ativo.");
             }
-            if (pedido.Itens == null || !pedido.Itens.Any())
+
+            var pedido = new Pedido
             {
-                _logger.LogWarning("Pedido para criação deve conter pelo menos um item.");
-                throw new ArgumentException("Pedido para criação deve conter pelo menos um item.", nameof(pedido));
+                ClienteId = clienteId,
+                Status = StatusPedido.Pendente,
+                PedidoItens = new List<PedidoItem>()
+            };
+
+            decimal total = 0;
+            
+            var produtosIds = dto.Itens.Select(i => i.ProdutoId).ToList();
+            var produtos = await _produtoRepository.GetByIdsAsync(produtosIds);
+
+            foreach (var itemDto in dto.Itens)
+            {
+                var produto = produtos.FirstOrDefault(p => p.Id == itemDto.ProdutoId);
+
+                if (produto == null)
+                    throw new Exception($"Produto {itemDto.ProdutoId} não encontrado.");
+
+                if (!produto.Disponivel)
+                    throw new Exception($"Produto {produto.Nome} indisponível.");
+
+                pedido.PedidoItens.Add(new PedidoItem
+                {
+                    ProdutoId = produto.Id,
+                    Quantidade = itemDto.Quantidade
+                });
             }
-            var pedidoEntity = _mapper.Map<Pedido>(pedido);
-            pedidoEntity.ClienteId = clienteId;
-            pedidoEntity.Status = StatusPedido.Pendente;
-            await _pedidoRepository.AddAsync(pedidoEntity);
+
+            pedido.ValorTotal = total;
+
+            await _pedidoRepository.AddAsync(pedido);
             await _unitOfWork.CommitAsync();
-            _logger.LogInformation("Pedido criado com ID: {Id}", pedidoEntity.Id);
-            return _mapper.Map<PedidoResponseDTO>(pedidoEntity);
+
+            _logger.LogInformation("Pedido criado com sucesso para cliente {ClienteId}", clienteId);
+
+            return _mapper.Map<PedidoResponseDTO>(pedido);
+
         }
 
         public async Task<bool> DeletePedidoAsync(int id)
