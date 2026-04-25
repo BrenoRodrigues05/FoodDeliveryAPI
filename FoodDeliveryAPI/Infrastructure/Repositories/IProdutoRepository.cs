@@ -9,6 +9,8 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
         Task<IEnumerable<Produto>> GetProdutosByPrecoAsync(decimal preco);
 
+        Task<List<Produto>> GetByIdsAsync(List<int> ids);
+
         Task<IEnumerable<Produto>> GetDisponiveisAsync();
         Task<Produto> CreateProdutoAsync(Produto produto);
         Task<Produto> UpdateProdutoAsync (Produto produto);

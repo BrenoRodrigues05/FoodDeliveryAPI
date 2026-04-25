@@ -18,9 +18,6 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
         public async Task<Produto?> GetProdutoByIdAsync(int id)
         {
             var busca = await _context.Produtos
-                .Include(p=> p.PedidoItens)
-                .Include(d => d.Descricao)
-                .Include(c => c.Disponivel)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id);
            _logger.LogInformation("ProdutoRepository: GetProdutoByIdAsync - Produto buscado por ID: {ProdutoId}", id);
@@ -88,6 +85,17 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             _logger.LogInformation("ProdutoRepository: GetDisponiveisAsync - Produtos disponíveis buscados");
 
             return busca;
+        }
+
+        public async Task<List<Produto>> GetByIdsAsync(List<int> ids)
+        {
+            var produtos = await _context.Produtos
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync();
+
+            _logger.LogInformation("Buscando produtos por lista de IDs.");
+
+            return produtos;
         }
     }
 }
