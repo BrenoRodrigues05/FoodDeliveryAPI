@@ -20,11 +20,8 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             _logger.LogInformation("Buscando todos os pedidos.");
 
             return await _context.Pedidos
-                .Include(p => p.Cliente)
-                .Include(p => p.Entregador)
-                .Include(p => p.PedidoItens)
-                    .ThenInclude(pi => pi.Produto)
-                .ToListAsync();
+                    .AsNoTracking()
+                    .ToListAsync();
         }
 
         public async Task<Pedido?> GetByIdAsync(int id)
@@ -35,7 +32,6 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
             var busca = await _context.Pedidos
                 .Include(p => p.Cliente)
                 .Include(p => p.Entregador)
-                .Include(p => p.Status)
                 .Include(p => p.PedidoItens)
                     .ThenInclude(pi => pi.Produto)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -73,7 +69,11 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
                     .SetProperty(p => p.EntregadorId, pedido.EntregadorId)
                 );
             _logger.LogInformation("Pedido com ID {Id} atualizado.", pedido.Id);
-            return affected > 0 ? pedido : null;
+
+            if (affected == 0)
+                throw new Exception("Pedido não encontrado.");
+
+            return pedido;
         }
 
         public async Task<IEnumerable<Pedido>> GetByClienteIdAsync(int clienteId)
@@ -83,6 +83,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
                 .Where(p => p.ClienteId == clienteId)
                 .Include(p => p.Cliente)
                 .Include(p => p.Entregador)
+                .Include(p => p.ValorTotal)
                 .Include(p => p.PedidoItens)
                     .ThenInclude(pi => pi.Produto)
                 .ToListAsync();
