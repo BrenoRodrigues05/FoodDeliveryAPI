@@ -25,6 +25,10 @@ namespace FoodDeliveryAPI.Context
               .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Pedido>()
+                .Property(p => p.ValorTotal)
+                .HasPrecision(10, 2);
+
+            builder.Entity<Pedido>()
                 .HasOne(p => p.Entregador)
                 .WithMany(e => e.Pedidos)
                 .HasForeignKey(p => p.EntregadorId);

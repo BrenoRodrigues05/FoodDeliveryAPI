@@ -15,6 +15,8 @@ namespace FoodDeliveryAPI.Domains.Entities
 
         public int? EntregadorId { get; set; }
 
+        public decimal ValorTotal { get; set; }
+
         public ICollection<PedidoItem> PedidoItens { get; set; } = new Collection<PedidoItem>();
 
         public Entregador? Entregador { get; set; } 
