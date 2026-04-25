@@ -5,6 +5,7 @@ using FoodDeliveryAPI.Application.Services;
 using FoodDeliveryAPI.Context;
 using FoodDeliveryAPI.Infrastructure.Repositories;
 using FoodDeliveryAPI.Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<FoodDeliveryAPIContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+
+// Configure authentication and authorization
+builder.Services.AddAuthentication("Bearer").AddJwtBearer();
+builder.Services.AddAuthorization();
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<FoodDeliveryAPIContext>()
+    .AddDefaultTokenProviders();
 
 // Register repositories and unit of work for dependency injection
 
@@ -55,6 +64,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

@@ -1,10 +1,10 @@
 ﻿using FoodDeliveryAPI.Domains.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 
 namespace FoodDeliveryAPI.Context
 {
-    public class FoodDeliveryAPIContext : DbContext
+    public class FoodDeliveryAPIContext : IdentityDbContext
     {
        public FoodDeliveryAPIContext(DbContextOptions<FoodDeliveryAPIContext> options) : base (options){ }
 
@@ -18,7 +18,9 @@ namespace FoodDeliveryAPI.Context
 
         protected override void OnModelCreating(ModelBuilder builder)
        {
-              builder.Entity<Pedido>()
+            base.OnModelCreating(builder);
+
+            builder.Entity<Pedido>()
               .HasMany(p => p.PedidoItens)
               .WithOne(p => p.Pedido)
               .HasForeignKey(p => p.PedidoId)
