@@ -89,6 +89,12 @@ namespace FoodDeliveryAPI.Application.Services
                 throw new InvalidOperationException($"Cliente com email {cliente.Email} já existe.");
             }
 
+            if(await _palavrasProibidasService.ContemPalavraProibida(cliente.Email))
+            {
+                _logger.LogWarning("Validação falhou: email do cliente contém palavras proibidas.");
+                throw new ArgumentException("Email do cliente contém palavras proibidas.");
+            }
+
             if (!string.IsNullOrWhiteSpace(cliente.Nome) && await _palavrasProibidasService.ContemPalavraProibida(cliente.Nome))
             {
                 _logger.LogWarning("Validação falhou: nome do cliente contém palavras proibidas.");
