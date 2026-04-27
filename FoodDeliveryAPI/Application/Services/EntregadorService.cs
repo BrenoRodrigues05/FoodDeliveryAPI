@@ -61,12 +61,18 @@ namespace FoodDeliveryAPI.Application.Services
                 _logger.LogWarning("Dados do entregador são nulos.");
                 throw new ArgumentNullException(nameof(entregador), "Dados do entregador não podem ser nulos.");
             }
-            var busca = await _entregadorRepository.GetByNameAsync(entregador.Nome);
+            var busca = await _entregadorRepository.GetByEmailAsync(entregador.Email);
 
             if(busca != null)
             {
-                _logger.LogWarning("Entregador já existe com nome: {Nome}", entregador.Nome);
-                throw new InvalidOperationException($"Entregador com nome {entregador.Nome} já existe.");
+                _logger.LogWarning("Entregador já existe com email: {Email}", entregador.Email);
+                throw new InvalidOperationException($"Entregador com email {entregador.Email} já existe.");
+            }
+
+            if(await _palavrasProibidasService.ContemPalavraProibida(entregador.Email))
+            {
+                _logger.LogWarning("Email do entregador contém palavras proibidas: {Email}", entregador.Email);
+                throw new InvalidOperationException("Email do entregador contém palavras proibidas.");
             }
 
             if (await _palavrasProibidasService.ContemPalavraProibida(entregador.Nome))
