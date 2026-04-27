@@ -65,12 +65,12 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
         }
 
-        public Task<Entregador?> GetByNameAsync(string nome)
+        public Task<Entregador?> GetByEmailAsync(string email)
         {
-            _logger.LogInformation($"Buscando entregador com nome: {nome}");
+            _logger.LogInformation($"Buscando entregador com email: {email}");
             var busca = _context.Entregadores
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(e => e.Nome == nome);
+                    .FirstOrDefaultAsync(e => e.Email == email);
 
             return busca;
         }

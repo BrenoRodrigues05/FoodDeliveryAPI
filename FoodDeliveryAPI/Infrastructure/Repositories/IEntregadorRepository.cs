@@ -12,7 +12,7 @@ namespace FoodDeliveryAPI.Infrastructure.Repositories
 
         Task <Entregador?> UpdateAsync (Entregador entregador);
 
-        Task<Entregador?> GetByNameAsync(string nome);
+        Task<Entregador?> GetByEmailAsync(string email);
 
         Task<Entregador?> GetPedidosEntregador(int id); 
     }
