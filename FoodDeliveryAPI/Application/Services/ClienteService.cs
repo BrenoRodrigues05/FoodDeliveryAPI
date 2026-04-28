@@ -73,42 +73,6 @@ namespace FoodDeliveryAPI.Application.Services
             return _mapper.Map<ClienteResponseDTO>(busca);
         }
 
-        public async Task<ClienteResponseDTO> CreateClienteAsync(ClienteCreateDTO cliente)
-        {
-            if (string.IsNullOrEmpty(cliente.Nome) || string.IsNullOrEmpty(cliente.Email))
-            {
-                _logger.LogWarning("Nome ou email do cliente é nulo ou vazio.");
-                throw new ArgumentException("Nome e email do cliente não podem ser nulos ou vazios.");
-            }
-
-            var busca = await _clienteRepository.GetByEmailAsync(cliente.Email);
-
-            if (busca != null)
-            {
-                _logger.LogWarning("Cliente já existe com email: {Email}", cliente.Email);
-                throw new InvalidOperationException($"Cliente com email {cliente.Email} já existe.");
-            }
-
-            if(await _palavrasProibidasService.ContemPalavraProibida(cliente.Email))
-            {
-                _logger.LogWarning("Validação falhou: email do cliente contém palavras proibidas.");
-                throw new ArgumentException("Email do cliente contém palavras proibidas.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(cliente.Nome) && await _palavrasProibidasService.ContemPalavraProibida(cliente.Nome))
-            {
-                _logger.LogWarning("Validação falhou: nome do cliente contém palavras proibidas.");
-
-                throw new ArgumentException("Nome do cliente contém palavras proibidas.");
-            }
-
-            var novoCliente = _mapper.Map<Cliente>(cliente);
-
-            await _clienteRepository.CreateAsync(novoCliente);
-            await _unitOfWork.CommitAsync();
-            _logger.LogInformation("Cliente criado com sucesso: {Email}", cliente.Email);
-            return _mapper.Map<ClienteResponseDTO>(novoCliente);
-        }
         public async Task<ClienteResponseDTO> UpdateClienteAsync(int id, ClienteUpdateDTO cliente)
         {
             if (id < 0)

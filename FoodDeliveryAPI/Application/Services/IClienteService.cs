@@ -6,7 +6,6 @@ namespace FoodDeliveryAPI.Application.Services
     public interface IClienteService
     {
         Task<IEnumerable<ClienteResponseDTO>> GetAllClientesAsync();
-        Task<ClienteResponseDTO> CreateClienteAsync(ClienteCreateDTO cliente);
         Task<ClienteResponseDTO> GetClienteByIdAsync(int id);
         Task<ClienteResponseDTO> GetClienteByEmailAsync(string email);
 

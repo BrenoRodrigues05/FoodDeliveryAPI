@@ -54,41 +54,6 @@ namespace FoodDeliveryAPI.Application.Services
             _logger.LogInformation("Entregador encontrado: {Nome}", busca.Nome);
             return _mapper.Map<EntregadorResponseDTO>(busca);
         }
-        public async Task<EntregadorResponseDTO> CreateEntregadorAsync(EntregadorCreateDTO entregador)
-        {
-           if(entregador == null)
-            {
-                _logger.LogWarning("Dados do entregador são nulos.");
-                throw new ArgumentNullException(nameof(entregador), "Dados do entregador não podem ser nulos.");
-            }
-            var busca = await _entregadorRepository.GetByEmailAsync(entregador.Email);
-
-            if(busca != null)
-            {
-                _logger.LogWarning("Entregador já existe com email: {Email}", entregador.Email);
-                throw new InvalidOperationException($"Entregador com email {entregador.Email} já existe.");
-            }
-
-            if(await _palavrasProibidasService.ContemPalavraProibida(entregador.Email))
-            {
-                _logger.LogWarning("Email do entregador contém palavras proibidas: {Email}", entregador.Email);
-                throw new InvalidOperationException("Email do entregador contém palavras proibidas.");
-            }
-
-            if (await _palavrasProibidasService.ContemPalavraProibida(entregador.Nome))
-            {
-                _logger.LogWarning("Nome do entregador contém palavras proibidas: {Nome}", entregador.Nome);
-                throw new InvalidOperationException("Nome do entregador contém palavras proibidas.");
-            }
-
-            var novoEntregador = _mapper.Map<Entregador>(entregador);
-            await _entregadorRepository.CreateAsync(novoEntregador);
-            await _unitOfWork.CommitAsync();
-            _logger.LogInformation("Entregador criado: {Nome}", novoEntregador.Nome);
-
-            return _mapper.Map<EntregadorResponseDTO>(novoEntregador);
-
-        }
 
         public async Task<bool> DeleteEntregadorAsync(int id)
         {
