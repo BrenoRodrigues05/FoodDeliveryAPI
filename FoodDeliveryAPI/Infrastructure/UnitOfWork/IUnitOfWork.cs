@@ -17,6 +17,7 @@ namespace FoodDeliveryAPI.Infrastructure.UnitOfWork
 
         public IEnderecoRepository EnderecoRepository { get; }
 
+        public IUsuarioRepository UsuarioRepository { get; }
 
         Task<int> CommitAsync();
     }
