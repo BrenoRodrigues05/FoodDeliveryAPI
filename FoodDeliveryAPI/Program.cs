@@ -68,6 +68,7 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IEnderecoRepository, EnderecoRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IPalavrasProibidasRepository, PalavrasProibidasRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 
 // Register AutoMapper for dependency injection
 builder.Services.AddAutoMapper(typeof(MappingProfile));
