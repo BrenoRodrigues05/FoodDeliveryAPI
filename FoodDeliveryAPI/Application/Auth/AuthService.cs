@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using FoodDeliveryAPI.Application.Auth.PasswordHash;
 using FoodDeliveryAPI.Application.DTOs;
+using FoodDeliveryAPI.Application.Services;
 using FoodDeliveryAPI.Domains.Entities;
 using FoodDeliveryAPI.Infrastructure.Repositories;
 using FoodDeliveryAPI.Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Components.Forms;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.WebSockets;
 using System.Security.Claims;
 
 namespace FoodDeliveryAPI.Application.Auth
@@ -20,9 +20,10 @@ namespace FoodDeliveryAPI.Application.Auth
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IConfiguration _configuration;
         private readonly IPasswordService _passwordService;
+        private readonly IPalavrasProibidasService _palavrasProibidasService;
 
         public AuthService(ITokenService tokenService, IUnitOfWork unitOfWork, ILogger<AuthService> logger,
-            IMapper mapper, IUsuarioRepository usuarioRepository, IConfiguration configuration, IPasswordService passwordService)
+            IMapper mapper, IUsuarioRepository usuarioRepository, IConfiguration configuration, IPasswordService passwordService, IPalavrasProibidasService palavrasProibidasService)
         {
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
@@ -31,6 +32,7 @@ namespace FoodDeliveryAPI.Application.Auth
             _usuarioRepository = usuarioRepository;
             _configuration = configuration;
             _passwordService = passwordService;
+            _palavrasProibidasService = palavrasProibidasService;
         }
 
         public async Task<UsuarioResponseDTO> RegisterAsync(UsuarioCreateDTO usuarioCreateDTO)
@@ -48,7 +50,13 @@ namespace FoodDeliveryAPI.Application.Auth
                 _logger.LogWarning("Usuário com email {Email} já existe.", usuarioCreateDTO.Email);
                 throw new InvalidOperationException("Usuário com este email já existe.");
             }
-            
+
+            if (await _palavrasProibidasService.ContemPalavraProibida(usuarioCreateDTO.Email))
+            {
+                _logger.LogWarning("Tentativa de cadastro com e-mail proibido: {Email}", usuarioCreateDTO.Email);
+                throw new InvalidOperationException("O e-mail informado não é permitido.");
+            }
+
             if(usuarioCreateDTO.Senha != usuarioCreateDTO.SenhaConfirmacao) 
             {
                 _logger.LogWarning("Senha e confirmação de senha não coincidem para email {Email}.", usuarioCreateDTO.Email);
