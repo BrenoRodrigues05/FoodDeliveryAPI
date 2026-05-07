@@ -1,4 +1,5 @@
 using FoodDeliveryAPI.Application.Auth;
+using FoodDeliveryAPI.Application.Auth.PasswordHash;
 using FoodDeliveryAPI.Application.Mappings;
 using FoodDeliveryAPI.Application.Middlewares;
 using FoodDeliveryAPI.Application.Services;
@@ -81,6 +82,7 @@ builder.Services.AddScoped<IEnderecoService, EnderecoService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IPalavrasProibidasService, PalavrasProibidasService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 var app = builder.Build();
 

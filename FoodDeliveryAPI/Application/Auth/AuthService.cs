@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FoodDeliveryAPI.Application.Auth.PasswordHash;
 using FoodDeliveryAPI.Application.DTOs;
 using FoodDeliveryAPI.Domains.Entities;
 using FoodDeliveryAPI.Infrastructure.Repositories;
@@ -18,9 +19,10 @@ namespace FoodDeliveryAPI.Application.Auth
         private readonly IMapper _mapper;
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IConfiguration _configuration;
+        private readonly IPasswordService _passwordService;
 
         public AuthService(ITokenService tokenService, IUnitOfWork unitOfWork, ILogger<AuthService> logger,
-            IMapper mapper, IUsuarioRepository usuarioRepository, IConfiguration configuration)
+            IMapper mapper, IUsuarioRepository usuarioRepository, IConfiguration configuration, IPasswordService passwordService)
         {
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
@@ -28,6 +30,7 @@ namespace FoodDeliveryAPI.Application.Auth
             _mapper = mapper;
             _usuarioRepository = usuarioRepository;
             _configuration = configuration;
+            _passwordService = passwordService;
         }
 
         public async Task<UsuarioResponseDTO> RegisterAsync(UsuarioCreateDTO usuarioCreateDTO)
@@ -53,8 +56,13 @@ namespace FoodDeliveryAPI.Application.Auth
             }
 
             var novoUsuario = _mapper.Map<Usuario>(usuarioCreateDTO);
+
+            // Hash de senha
+            var senhaHash = _passwordService.HashPassword(usuarioCreateDTO.Senha);
+            novoUsuario.Senha = senhaHash;
+
             await _usuarioRepository.AddAsync(novoUsuario);
-                        await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync();
             _logger.LogInformation("Novo usuário registrado com email {Email}.", usuarioCreateDTO.Email);
 
             var claims = new List<Claim>
@@ -93,9 +101,15 @@ namespace FoodDeliveryAPI.Application.Auth
         {
            var buscaUsuario = await _usuarioRepository.GetByEmailAsync(usuarioLoginDTO.Email);
 
-            if (buscaUsuario == null || buscaUsuario.Senha != usuarioLoginDTO.Senha)
+            if (buscaUsuario == null)
             {
-                _logger.LogWarning("Falha de login para email {Email}. Credenciais inválidas.", usuarioLoginDTO.Email);
+                throw new InvalidOperationException("Usuário não encontrado.");
+            }
+
+            var verificaSenha = _passwordService.Verification(usuarioLoginDTO.Senha, buscaUsuario.Senha);
+
+            if (!verificaSenha)
+            {
                 throw new InvalidOperationException("Email ou senha inválidos.");
             }
 
